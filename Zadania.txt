@@ -1,0 +1,25 @@
+0. Until now the scene objects were all moving in one plane of motion (X-Z). We will extend the movement to 3D in this exercise. The planets from the previous exercise will now be scattered randomly in space. We will use quaternions to elegantly describe the motion of the spaceship in the scene.
+
+1. Draw a greater number of planets (e.g. 10) in 3D space (they should not lie in a plane anymore). You can generate random positions for the planets in the function init() (e.g. with the function vec3 glm::ballRand(float R), which returns a random vector of length R), store these positions in an array or a std::vector and in the function renderScene() insert a loop that draws all the planets.
+ 
+2. Create a camera, where up-down mouse movements will result in a rotation of the local X-axis, and right-left movements - a local camera rotation around the Y-axis. Start by removing the contents of the function createCameraMatrix(), we will use new instructions there.
+
+a) In the main C++ file you will find a new function void mouse(int x, int y), which is callbacked whenever a user is moving the mouse. Create a global variable(s), where after a callback of the function mouse() you will store the difference between the previous and current mouse positions (once for the X-axis and Y-axis). This difference will be used to calculate the camera rotation.
+
+b) In the function createCameraMatrix() calculate the quaternion representing the rotation caused by the mouse movement between the previous and current frame (the global varibale defined in 2a). You can use the function glm::quat glm::axisAngle(float angle, glm::vec3 axis), which returns a quaternion representing the rotation about a given rotation axis and rotation angle (see lecture notes). Calculate the rotation about the X-axis (resulting from mouse movement in the y-axis) and for the Y-axis (resulting from mouse movement in the x-axis) and multiply them together. After calculating the quaternion, reset the global variable(s) defined in 2a.
+
+c) Compute a new rotation (global variable rotation), by:
+rotation = rotationChange * rotation; // rotationChange is the quaternion from 2b)
+Due numerical errors, normalize the resulting quaternion (function glm::quat glm::normalize(glm::quat q)).
+
+d) In the files Camera.h and Camera.cpp you will find a new function Core::createViewMatrixQuat(), which generates a camera matrix from the position and a quaternion expressing the orientation, which you should used instead of the previous one (Core::createViewMatrix()).
+
+e) In each update step of the function createCameraMatrix() you should also update the values for cameraDir and cameraSide (so that the camera correctly responds to input from the keyboard). cameraDir and cameraSide are vectors, which in camera space have the values (0,0,-1) and (1,0,0). To obtain world space coordinates for these vectors, you can simply transform them using the inverse camera orientation. You can compute this using the inverse quaternion rotation.
+Pseudo-code:
+cameraDir = inverseRotation * (0, 0, -1) 
+Inverse of a quaternion can be computed by the function glm::quat glm::inverse(glm::quat q).
+
+3. Fix the code for attaching the spaceship to the camera.
+a) Th rotation for the variable shipModelMatrix is calculated by "glm::rotate(-cameraAngle, glm::vec3(0,1,0))" and has to be now replaced with a new expression. The rotation of the camera is encoded in the quaternion we can obtain it with the function glm::mat4 glm::mat4_cast(glm::quat q). Use the inverse quaternion to calculcate the rinverse rotation matrix and replace it with the former expression in shipModelMatrix.
+
+4. Add a camera rotation around its own axis (local Z-axis) by using the keys Z and X on the keyboard.
